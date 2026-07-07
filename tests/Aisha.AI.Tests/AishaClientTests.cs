@@ -33,7 +33,7 @@ public sealed class AishaClientTests
         {
             capturedRequest = request;
             capturedBody = request.Content is null ? null : await request.Content.ReadAsStringAsync();
-            return JsonResponse(request, "{"audio_path":"/backend/tts_audio/test.wav"}");
+            return JsonResponse(request, "{\"audio_path\":\"/backend/tts_audio/test.wav\"}");
         }));
         using var client = new AishaClient("key", baseUrl: "https://example.test", httpClient: httpClient);
 
@@ -41,8 +41,8 @@ public sealed class AishaClientTests
 
         Assert.Equal("/api/v1/tts/post/", capturedRequest?.RequestUri?.AbsolutePath);
         Assert.Equal("key", capturedRequest?.Headers.GetValues("X-Api-Key").Single());
-        Assert.Contains("Salom", capturedBody);
-        Assert.Contains("Happy", capturedBody);
+        Assert.Contains("Salom", capturedBody ?? string.Empty);
+        Assert.Contains("Happy", capturedBody ?? string.Empty);
         Assert.Equal("https://example.test/backend/tts_audio/test.wav", result["audioUrl"]);
     }
 
@@ -53,15 +53,15 @@ public sealed class AishaClientTests
         using var httpClient = new HttpClient(new StubHandler(async request =>
         {
             capturedBody = request.Content is null ? null : await request.Content.ReadAsStringAsync();
-            return JsonResponse(request, "{"audio_url":"https://cdn.test/a.wav"}");
+            return JsonResponse(request, "{\"audio_url\":\"https://cdn.test/a.wav\"}");
         }));
         using var client = new AishaClient("key", httpClient: httpClient);
 
         Dictionary<string, object?> result = await client.TtsAsync(new TtsRequest { Transcript = "Hello", Language = "en" });
 
-        Assert.DoesNotContain("model", capturedBody);
-        Assert.DoesNotContain("mood", capturedBody);
-        Assert.DoesNotContain("speed", capturedBody);
+        Assert.DoesNotContain("model", capturedBody ?? string.Empty);
+        Assert.DoesNotContain("mood", capturedBody ?? string.Empty);
+        Assert.DoesNotContain("speed", capturedBody ?? string.Empty);
         Assert.Equal("https://cdn.test/a.wav", result["audioUrl"]);
     }
 
@@ -78,7 +78,7 @@ public sealed class AishaClientTests
     [Fact]
     public async Task ApiErrorsThrowAishaApiException()
     {
-        using var httpClient = new HttpClient(new StubHandler(request => Task.FromResult(JsonResponse(request, "{"detail":"bad key"}", HttpStatusCode.Unauthorized))));
+        using var httpClient = new HttpClient(new StubHandler(request => Task.FromResult(JsonResponse(request, "{\"detail\":\"bad key\"}", HttpStatusCode.Unauthorized))));
         using var client = new AishaClient("key", httpClient: httpClient);
 
         AishaApiException error = await Assert.ThrowsAsync<AishaApiException>(() => client.TtsAsync(new TtsRequest { Transcript = "Salom" }));
@@ -93,7 +93,7 @@ public sealed class AishaClientTests
         using var httpClient = new HttpClient(new StubHandler(request =>
         {
             capturedUri = request.RequestUri;
-            return Task.FromResult(JsonResponse(request, "{"count":0,"results":[]}"));
+            return Task.FromResult(JsonResponse(request, "{\"count\":0,\"results\":[]}"));
         }));
         using var client = new AishaClient("key", httpClient: httpClient);
 
@@ -112,14 +112,14 @@ public sealed class AishaClientTests
         {
             capturedRequest = request;
             capturedBody = request.Content is null ? null : await request.Content.ReadAsStringAsync();
-            return JsonResponse(request, "{"transcript":"salom"}");
+            return JsonResponse(request, "{\"transcript\":\"salom\"}");
         }));
         using var client = new AishaClient("key", httpClient: httpClient);
 
         Dictionary<string, object?> result = await client.SttAsync(new SttRequest { FileBytes = new byte[] { 1, 2, 3 }, Filename = "test.wav" });
 
         Assert.Equal("/api/v1/stt/post/", capturedRequest?.RequestUri?.AbsolutePath);
-        Assert.Contains("test.wav", capturedBody);
+        Assert.Contains("test.wav", capturedBody ?? string.Empty);
         Assert.Equal("salom", result["transcript"]);
     }
 
