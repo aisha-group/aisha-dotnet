@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>Aisha.AI</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Aisha Group</Authors>
+    <Company>Aisha Group</Company>
+    <Description>Aisha AI SDK for .NET. Add text-to-speech and speech-to-text to C# apps and backend services.</Description>
+    <PackageProjectUrl>https://aisha.group</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/aisha-group/aisha-dotnet</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>aisha ai tts stt text-to-speech speech-to-text</PackageTags>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>

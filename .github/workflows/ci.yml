@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test .NET ${{ matrix.dotnet-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dotnet-version:
+          - "8.0.x"
+          - "10.0.x"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Format check
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Pack
+        run: dotnet pack src/Aisha.AI/Aisha.AI.csproj --configuration Release --no-build --output artifacts
+
+  real-api:
+    name: Real API smoke tests
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    env:
+      AISHA_API_TEST_KEY: ${{ secrets.AISHA_API_TEST_KEY }}
+      RUN_AISHA_REAL_API_TESTS: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Run real API smoke tests
+        run: dotnet test tests/Aisha.AI.Tests/Aisha.AI.Tests.csproj --filter FullyQualifiedName~RealApiTests --verbosity normal
