@@ -101,9 +101,10 @@ public sealed class AishaClient : IDisposable
         {
             string audioUrl = AbsoluteAudioUrl(audioPath);
             result["audioUrl"] = audioUrl;
-            if (!string.IsNullOrWhiteSpace(request.OutputPath))
+            string? outputPath = request.OutputPath;
+            if (!string.IsNullOrWhiteSpace(outputPath))
             {
-                result["outputPath"] = await DownloadAudioAsync(audioUrl, request.OutputPath, cancellationToken).ConfigureAwait(false);
+                result["outputPath"] = await DownloadAudioAsync(audioUrl, outputPath, cancellationToken).ConfigureAwait(false);
             }
         }
         return result;
